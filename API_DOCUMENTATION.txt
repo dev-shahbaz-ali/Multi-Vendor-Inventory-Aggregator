@@ -1,0 +1,732 @@
+================================================================================
+                    INVENTORY AGGREGATOR API DOCUMENTATION
+================================================================================
+
+BASE URL: http://localhost:3000
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. Getting Started
+2. Product APIs
+3. Inventory APIs
+4. Purchase APIs
+5. WebSocket Dashboard
+6. Complete Usage Examples
+7. Error Codes
+8. Testing Scenarios
+
+================================================================================
+1. GETTING STARTED
+================================================================================
+
+First, make sure your server is running:
+> npm run dev
+
+Server will start at: http://localhost:3000
+
+Test if server is running:
+GET http://localhost:3000/health
+
+================================================================================
+2. PRODUCT APIs
+================================================================================
+
+2.1 CREATE A NEW PRODUCT
+------------------------
+Purpose: Add a new product to the system
+
+Method: POST
+URL: http://localhost:3000/api/products
+Headers: Content-Type: application/json
+
+Body (JSON):
+{
+  "sku": "PRODUCT-SKU-001",
+  "name": "Product Name",
+  "vendorId": "vendor_name",
+  "currentPrice": 99.99,
+  "description": "Product description here"
+}
+
+Example:
+{
+  "sku": "LAPTOP-001",
+  "name": "Gaming Laptop",
+  "vendorId": "vendor_asus",
+  "currentPrice": 1299.99,
+  "description": "High-performance gaming laptop"
+}
+
+Success Response (201 Created):
+{
+  "success": true,
+  "data": {
+    "_id": "65a4b5c6d7e8f9a0b1c2d3e4",
+    "sku": "LAPTOP-001",
+    "name": "Gaming Laptop",
+    "vendorId": "vendor_asus",
+    "currentPrice": 1299.99,
+    "createdAt": "2024-01-15T10:30:00.000Z"
+  },
+  "message": "Product created successfully"
+}
+
+2.2 GET ALL PRODUCTS
+--------------------
+Purpose: Retrieve list of all products
+
+Method: GET
+URL: http://localhost:3000/api/products
+
+Success Response:
+{
+  "success": true,
+  "count": 3,
+  "data": [
+    { product1 details },
+    { product2 details }
+  ]
+}
+
+2.3 GET SINGLE PRODUCT
+----------------------
+Purpose: Get details of a specific product
+
+Method: GET
+URL: http://localhost:3000/api/products/{productId}
+
+Example: http://localhost:3000/api/products/69c6545d7377a230d14c53ad
+
+Success Response:
+{
+  "success": true,
+  "data": { product details }
+}
+
+2.4 UPDATE PRODUCT PRICE
+------------------------
+Purpose: Update the price of a product
+
+Method: PUT
+URL: http://localhost:3000/api/products/{productId}/price
+Headers: Content-Type: application/json
+
+Body:
+{
+  "currentPrice": 1099.99
+}
+
+Success Response:
+{
+  "success": true,
+  "data": { updated product },
+  "oldPrice": 1299.99,
+  "message": "Price updated successfully"
+}
+
+2.5 DELETE PRODUCT
+------------------
+Purpose: Remove a product from the system
+
+Method: DELETE
+URL: http://localhost:3000/api/products/{productId}
+
+Success Response:
+{
+  "success": true,
+  "message": "Product deleted successfully"
+}
+
+================================================================================
+3. INVENTORY APIs
+================================================================================
+
+3.1 CREATE OR UPDATE INVENTORY
+------------------------------
+Purpose: Add stock for a product (must have product created first)
+
+Method: POST
+URL: http://localhost:3000/api/inventory
+Headers: Content-Type: application/json
+
+Body:
+{
+  "productId": "69c6545d7377a230d14c53ad",
+  "stock": 50,
+  "lowStockThreshold": 10
+}
+
+Note: lowStockThreshold is optional, defaults to 10
+
+Success Response (201 Created):
+{
+  "success": true,
+  "data": {
+    "productId": "69c6545d7377a230d14c53ad",
+    "stock": 50,
+    "lowStockThreshold": 10,
+    "version": 1
+  },
+  "message": "Inventory created successfully"
+}
+
+3.2 GET ALL INVENTORY
+---------------------
+Purpose: Get all inventory records with product details
+
+Method: GET
+URL: http://localhost:3000/api/inventory
+
+Success Response:
+{
+  "success": true,
+  "count": 3,
+  "data": [
+    {
+      "productId": { product details },
+      "stock": 50,
+      "lowStockThreshold": 10
+    }
+  ]
+}
+
+3.3 GET INVENTORY BY PRODUCT
+----------------------------
+Purpose: Get stock details for a specific product
+
+Method: GET
+URL: http://localhost:3000/api/inventory/product/{productId}
+
+Example: http://localhost:3000/api/inventory/product/69c6545d7377a230d14c53ad
+
+Success Response:
+{
+  "success": true,
+  "data": {
+    "productId": { product details },
+    "stock": 50,
+    "lowStockThreshold": 10,
+    "isLowStock": false
+  }
+}
+
+3.4 GET LOW STOCK ITEMS
+-----------------------
+Purpose: Get all products with stock below threshold
+
+Method: GET
+URL: http://localhost:3000/api/inventory/low-stock
+
+Success Response:
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "productId": { product details },
+      "stock": 3,
+      "lowStockThreshold": 10
+    }
+  ]
+}
+
+3.5 UPDATE STOCK (ADD or REDUCE)
+--------------------------------
+Purpose: Add or reduce stock for a product
+
+Method: PUT
+URL: http://localhost:3000/api/inventory/{productId}/stock
+Headers: Content-Type: application/json
+
+Body:
+{
+  "quantity": 10,
+  "operation": "add"     // "add" or "reduce"
+}
+
+Example to ADD stock:
+{
+  "quantity": 20,
+  "operation": "add"
+}
+
+Example to REDUCE stock:
+{
+  "quantity": 5,
+  "operation": "reduce"
+}
+
+Success Response:
+{
+  "success": true,
+  "data": {
+    "stock": 60,
+    "version": 2
+  },
+  "alerts": {
+    "isLowStock": false,
+    "isCritical": false,
+    "message": null
+  },
+  "message": "Stock added successfully"
+}
+
+When stock becomes low (< threshold):
+{
+  "alerts": {
+    "isLowStock": true,
+    "isCritical": false,
+    "message": "Warning: Stock is now low!"
+  }
+}
+
+When stock becomes 0:
+{
+  "alerts": {
+    "isLowStock": true,
+    "isCritical": true,
+    "message": "CRITICAL: Product is now out of stock!"
+  }
+}
+
+3.6 UPDATE LOW STOCK THRESHOLD
+------------------------------
+Purpose: Change the low stock alert threshold
+
+Method: PUT
+URL: http://localhost:3000/api/inventory/{productId}/threshold
+Headers: Content-Type: application/json
+
+Body:
+{
+  "lowStockThreshold": 15
+}
+
+Success Response:
+{
+  "success": true,
+  "data": { updated inventory },
+  "message": "Low stock threshold updated successfully"
+}
+
+3.7 DELETE INVENTORY
+--------------------
+Purpose: Remove inventory record for a product
+
+Method: DELETE
+URL: http://localhost:3000/api/inventory/{productId}
+
+Success Response:
+{
+  "success": true,
+  "message": "Inventory deleted successfully"
+}
+
+================================================================================
+4. PURCHASE APIs
+================================================================================
+
+4.1 MAKE A PURCHASE (Single Item)
+---------------------------------
+Purpose: Purchase a product (reduces stock automatically)
+
+Method: POST
+URL: http://localhost:3000/api/purchase
+Headers: Content-Type: application/json
+
+Body:
+{
+  "productId": "69c6545d7377a230d14c53ad",
+  "quantity": 1,
+  "userId": "customer_001"
+}
+
+Note: userId is optional
+
+Success Response:
+{
+  "success": true,
+  "data": {
+    "transactionId": "abc123-def456-ghi789",
+    "product": {
+      "id": "69c6545d7377a230d14c53ad",
+      "name": "Gaming Laptop",
+      "sku": "LAPTOP-001"
+    },
+    "quantity": 1,
+    "remainingStock": 49,
+    "timestamp": "2024-01-15T10:30:00.000Z"
+  },
+  "alerts": {
+    "isLowStock": false,
+    "isCritical": false,
+    "message": null
+  },
+  "message": "Purchase completed successfully"
+}
+
+When stock becomes low:
+{
+  "alerts": {
+    "isLowStock": true,
+    "isCritical": false,
+    "message": "Warning: Stock is now low!"
+  }
+}
+
+When stock is insufficient (409 Conflict):
+{
+  "success": false,
+  "error": "Insufficient stock",
+  "available": 5,
+  "requested": 10
+}
+
+4.2 MAKE BATCH PURCHASES
+------------------------
+Purpose: Purchase multiple products in one request
+
+Method: POST
+URL: http://localhost:3000/api/purchase/batch
+Headers: Content-Type: application/json
+
+Body:
+{
+  "purchases": [
+    {
+      "productId": "69c6545d7377a230d14c53ad",
+      "quantity": 2,
+      "userId": "customer_001"
+    },
+    {
+      "productId": "69c656687377a230d14c53b1",
+      "quantity": 1,
+      "userId": "customer_001"
+    },
+    {
+      "productId": "69c656727377a230d14c53b4",
+      "quantity": 3,
+      "userId": "customer_001"
+    }
+  ]
+}
+
+Success Response:
+{
+  "success": true,
+  "summary": {
+    "total": 3,
+    "successful": 2,
+    "failed": 1
+  },
+  "results": [
+    {
+      "success": true,
+      "productId": "...",
+      "remainingStock": 48,
+      "transactionId": "..."
+    },
+    {
+      "success": false,
+      "productId": "...",
+      "error": "Insufficient stock",
+      "available": 5,
+      "requested": 10
+    }
+  ]
+}
+
+4.3 CHECK TRANSACTION STATUS
+----------------------------
+Purpose: Get details of a specific transaction
+
+Method: GET
+URL: http://localhost:3000/api/purchase/transaction/{transactionId}
+
+Example: http://localhost:3000/api/purchase/transaction/abc123-def456-ghi789
+
+Success Response:
+{
+  "success": true,
+  "data": {
+    "transactionId": "abc123-def456-ghi789",
+    "productId": { product details },
+    "quantity": 1,
+    "status": "completed",
+    "timestamp": "2024-01-15T10:30:00.000Z"
+  }
+}
+
+4.4 GET PURCHASE HISTORY
+------------------------
+Purpose: Get all purchases for a product
+
+Method: GET
+URL: http://localhost:3000/api/purchase/history/{productId}
+Optional: ?limit=100
+
+Example: http://localhost:3000/api/purchase/history/69c6545d7377a230d14c53ad?limit=50
+
+Success Response:
+{
+  "success": true,
+  "count": 5,
+  "data": [
+    {
+      "transactionId": "...",
+      "quantity": 1,
+      "status": "completed",
+      "timestamp": "..."
+    }
+  ]
+}
+
+4.5 GET PURCHASE STATISTICS
+---------------------------
+Purpose: Get overall purchase statistics
+
+Method: GET
+URL: http://localhost:3000/api/purchase/stats
+
+Success Response:
+{
+  "success": true,
+  "data": {
+    "total": 50,
+    "completed": 45,
+    "failed": 5,
+    "successRate": "90.00",
+    "byStatus": [
+      { "_id": "completed", "count": 45, "totalQuantity": 67 },
+      { "_id": "failed", "count": 5, "totalQuantity": 5 }
+    ]
+  }
+}
+
+================================================================================
+5. WEBSOCKET DASHBOARD
+================================================================================
+
+5.1 ACCESS DASHBOARD
+--------------------
+Open in browser: http://localhost:3000/dashboard
+
+The dashboard shows:
+- Real-time connection status
+- Live inventory alerts
+- Alert statistics (total, critical, low stock)
+- Connected clients count
+
+5.2 WEBSOCKET EVENTS
+--------------------
+The dashboard listens for:
+
+1. low_stock_alert - Triggered when stock falls below threshold
+   {
+     "type": "LOW_STOCK",
+     "productName": "Gaming Laptop",
+     "currentStock": 3,
+     "threshold": 10,
+     "severity": "WARNING" or "CRITICAL"
+   }
+
+2. system_alert - System notifications
+
+3. connected - Connection confirmation
+
+================================================================================
+6. COMPLETE USAGE EXAMPLES
+================================================================================
+
+EXAMPLE 1: Full Product Lifecycle
+---------------------------------
+
+Step 1: Create a product
+POST http://localhost:3000/api/products
+{
+  "sku": "PHONE-001",
+  "name": "Smartphone X",
+  "vendorId": "vendor_samsung",
+  "currentPrice": 699.99,
+  "description": "Latest smartphone with 5G"
+}
+
+Step 2: Add inventory for product
+POST http://localhost:3000/api/inventory
+{
+  "productId": "PRODUCT_ID_FROM_STEP_1",
+  "stock": 100,
+  "lowStockThreshold": 20
+}
+
+Step 3: Check inventory
+GET http://localhost:3000/api/inventory/product/PRODUCT_ID_FROM_STEP_1
+
+Step 4: Make a purchase
+POST http://localhost:3000/api/purchase
+{
+  "productId": "PRODUCT_ID_FROM_STEP_1",
+  "quantity": 5,
+  "userId": "customer_001"
+}
+
+Step 5: Check updated inventory
+GET http://localhost:3000/api/inventory/product/PRODUCT_ID_FROM_STEP_1
+
+EXAMPLE 2: Race Condition Test (50 Requests for 5 Items)
+--------------------------------------------------------
+
+Step 1: Set inventory to exactly 5 units
+PUT http://localhost:3000/api/inventory/PRODUCT_ID/stock
+{
+  "quantity": 5,
+  "operation": "add"
+}
+
+Step 2: Quickly send 50 purchase requests (simultaneously)
+POST http://localhost:3000/api/purchase
+{
+  "productId": "PRODUCT_ID",
+  "quantity": 1,
+  "userId": "test_user_1"
+}
+... repeat 50 times with different userIds
+
+Expected Result:
+- 5 successful purchases
+- 45 failed with "Insufficient stock"
+- Final stock: 0 (no overselling)
+
+EXAMPLE 3: Low Stock Alert Testing
+----------------------------------
+
+Step 1: Create product with low threshold
+POST http://localhost:3000/api/inventory
+{
+  "productId": "PRODUCT_ID",
+  "stock": 8,
+  "lowStockThreshold": 10
+}
+
+Step 2: Open dashboard
+http://localhost:3000/dashboard
+
+Step 3: Make a purchase that reduces stock below threshold
+POST http://localhost:3000/api/purchase
+{
+  "productId": "PRODUCT_ID",
+  "quantity": 5,
+  "userId": "test_user"
+}
+
+Step 4: Watch dashboard - an alert appears instantly!
+
+================================================================================
+7. ERROR CODES
+================================================================================
+
+400 Bad Request
+- Missing required fields
+- Invalid quantity (negative or zero)
+- Invalid operation type
+
+404 Not Found
+- Product not found
+- Inventory not found
+- Transaction not found
+
+409 Conflict
+- Insufficient stock
+- Duplicate SKU
+- Stock changed during transaction
+
+500 Internal Server Error
+- Database connection issues
+- Server-side errors
+
+================================================================================
+8. TESTING SCENARIOS
+================================================================================
+
+Scenario 1: Normal Purchase Flow
+--------------------------------
+1. GET /api/products (check existing products)
+2. POST /api/inventory (create inventory if needed)
+3. POST /api/purchase (purchase 1 unit)
+4. GET /api/inventory/product/{id} (verify stock decreased)
+5. GET /api/purchase/transaction/{id} (verify transaction)
+
+Scenario 2: Low Stock Alert
+---------------------------
+1. POST /api/inventory (set stock to 8, threshold 10)
+2. Open dashboard: http://localhost:3000/dashboard
+3. POST /api/purchase (purchase 3 units)
+4. Stock becomes 5 (< threshold) → Alert appears on dashboard
+
+Scenario 3: Critical Stock Alert
+--------------------------------
+1. POST /api/inventory (set stock to 5)
+2. POST /api/purchase (purchase all 5 units)
+3. Stock becomes 0 → Critical alert appears
+4. Try to purchase again → "Insufficient stock" error
+
+Scenario 4: Race Condition Test
+-------------------------------
+1. POST /api/inventory (set stock to 5)
+2. Send 10 concurrent purchase requests
+3. Only 5 succeed, 5 fail
+4. Final stock = 0 (no overselling)
+
+Scenario 5: Batch Purchase
+--------------------------
+1. Create multiple products with inventory
+2. POST /api/purchase/batch with multiple items
+3. Check results summary
+4. Verify each transaction recorded
+
+================================================================================
+9. QUICK REFERENCE CARD
+================================================================================
+
+COMMAND                    METHOD    URL
+-------------------------------------------------------------------------------
+Create Product             POST      /api/products
+Get All Products           GET       /api/products
+Get Product                GET       /api/products/{id}
+Update Price               PUT       /api/products/{id}/price
+Delete Product             DELETE    /api/products/{id}
+
+Create Inventory           POST      /api/inventory
+Get All Inventory          GET       /api/inventory
+Get Inventory by Product   GET       /api/inventory/product/{id}
+Get Low Stock Items        GET       /api/inventory/low-stock
+Update Stock               PUT       /api/inventory/{id}/stock
+Update Threshold           PUT       /api/inventory/{id}/threshold
+Delete Inventory           DELETE    /api/inventory/{id}
+
+Make Purchase              POST      /api/purchase
+Batch Purchase             POST      /api/purchase/batch
+Get Transaction            GET       /api/purchase/transaction/{id}
+Get Purchase History       GET       /api/purchase/history/{id}
+Get Purchase Stats         GET       /api/purchase/stats
+
+Dashboard                  GET       /dashboard (browser)
+Health Check               GET       /health
+
+================================================================================
+10. IMPORTANT NOTES
+================================================================================
+
+1. Always create a product before creating inventory
+2. Inventory must exist before making purchases
+3. Stock updates are ATOMIC - prevents race conditions
+4. WebSocket dashboard shows real-time alerts
+5. Transaction IDs are generated automatically
+6. All timestamps are in ISO format
+7. Version field enables optimistic locking
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
