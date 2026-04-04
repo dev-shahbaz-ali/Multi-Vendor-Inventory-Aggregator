@@ -46,7 +46,7 @@ const createOrUpdateInventory = async (req, res) => {
       // Create new inventory
       inventory = new Inventory({
         productId,
-        vendorId: product.vendorId,
+        vendorId: product.vendorId || "Unknown Vendor",
         stock,
         lowStockThreshold: lowStockThreshold || 10,
         lastSyncedAt: new Date(),
@@ -61,6 +61,13 @@ const createOrUpdateInventory = async (req, res) => {
       });
     }
   } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid Product ID format",
+      });
+    }
+
     console.error("Create/Update inventory error:", error);
     res.status(500).json({
       success: false,

@@ -2,7 +2,7 @@ const Product = require("../models/Product");
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, sku, currentPrice, description } = req.body;
+    const { name, sku, vendorId, currentPrice, description } = req.body;
 
     // Check if product with this SKU already exists
     const existingProduct = await Product.findOne({ sku: sku.toUpperCase() });
@@ -12,7 +12,13 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    const product = new Product({ name, sku, currentPrice, description });
+    const product = new Product({
+      name,
+      sku,
+      vendorId,
+      currentPrice,
+      description,
+    });
     await product.save();
 
     res.status(201).json(product);

@@ -29,6 +29,9 @@ app.use("/api", productRoutes);
 app.use("/api", inventoryRoutes);
 app.use("/api", purchaseRoutes);
 
+// Add global purchase history endpoint
+app.get("/api/purchase/all", purchaseController.getAllTransactions);
+
 // Store connected clients
 const connectedClients = new Map();
 
@@ -148,6 +151,22 @@ app.get("/add-product", (req, res) => {
 
 app.get("/products-list", (req, res) => {
   res.sendFile(path.join(__dirname, "src", "public", "products.html"));
+});
+
+app.get("/inventory-list", (req, res) => {
+  res.sendFile(path.join(__dirname, "src", "public", "inventory.html"));
+});
+
+app.get("/manage-inventory", (req, res) => {
+  res.sendFile(path.join(__dirname, "src", "public", "manage-inventory.html"));
+});
+
+app.get("/make-purchase", (req, res) => {
+  res.sendFile(path.join(__dirname, "src", "public", "make-purchase.html"));
+});
+
+app.get("/purchase-history", (req, res) => {
+  res.sendFile(path.join(__dirname, "src", "public", "purchase-history.html"));
 });
 
 // Check if MongoDB URI is configured

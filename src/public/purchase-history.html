@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Purchase History - Aggregator</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #edf2f7;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #edf2f7;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #edf2f7;
+      }
+      th {
+        background: #f7fafc;
+        color: #718096;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+      .status-completed {
+        color: #38a169;
+        font-weight: bold;
+      }
+      .status-failed {
+        color: #e53e3e;
+        font-weight: bold;
+      }
+      .nav-links a {
+        text-decoration: none;
+        color: #667eea;
+        font-weight: bold;
+        margin-left: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📜 Purchase History</h1>
+        <div class="nav-links">
+          <a href="/dashboard">← Dashboard</a>
+          <a href="/make-purchase">New Order</a>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Transaction ID</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="historyList">
+          <tr>
+            <td colspan="5" style="text-align: center">Loading history...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      async function loadHistory() {
+        try {
+          const res = await fetch("/api/purchase/all");
+          const result = await res.json();
+          const list = document.getElementById("historyList");
+
+          if (result.success && result.data.length > 0) {
+            list.innerHTML = result.data
+              .map(
+                (tx) => `
+                        <tr>
+                            <td>${new Date(tx.timestamp).toLocaleString()}</td>
+                            <td><small>${tx.transactionId}</small></td>
+                            <td>${tx.productId?.name || "Deleted Product"} (${tx.productId?.sku || "N/A"})</td>
+                            <td>${tx.quantity}</td>
+                            <td class="status-${tx.status}">${tx.status.toUpperCase()}</td>
+                        </tr>
+                    `,
+              )
+              .join("");
+          } else {
+            list.innerHTML =
+              '<tr><td colspan="5" style="text-align:center">No transactions found.</td></tr>';
+          }
+        } catch (err) {
+          console.error(err);
+          document.getElementById("historyList").innerHTML =
+            '<tr><td colspan="5" style="text-align:center; color:red">Error loading history.</td></tr>';
+        }
+      }
+      loadHistory();
+    </script>
+  </body>
+</html>

@@ -165,6 +165,12 @@ const processPurchase = async (req, res) => {
     });
   } catch (error) {
     console.error("Purchase error:", error);
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid Product ID format",
+      });
+    }
 
     // Update transaction as failed if it exists
     try {
@@ -432,6 +438,19 @@ const getPurchaseStats = async (req, res) => {
   }
 };
 
+// Get all transactions across all products
+const getAllTransactions = async (req, res) => {
+  try {
+    const transactions = await Transaction.find()
+      .sort({ timestamp: -1 })
+      .populate("productId", "sku name");
+    res.json({ success: true, count: transactions.length, data: transactions });
+  } catch (error) {
+    console.error("Get all transactions error:", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
 module.exports = {
   processPurchase,
   processBatchPurchases,
@@ -439,4 +458,5 @@ module.exports = {
   getPurchaseHistory,
   getPurchaseStats,
   setWebSocket,
+  getAllTransactions,
 };
