@@ -82,11 +82,12 @@ app.get("/", (req, res) => {
     endpoints: {
       health: "/health",
       dashboard: "/dashboard",
+      addProduct: "/add-product",
       products: {
         create: "POST /api/products",
         getAll: "GET /api/products",
         getOne: "GET /api/products/:id",
-        updatePrice: "PUT /api/products/:id/price",
+        updatePrice: "PUT /api/products/:id/current-price",
         delete: "DELETE /api/products/:id",
       },
       inventory: {
@@ -139,6 +140,14 @@ app.get("/health", (req, res) => {
 const path = require("path");
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "src", "public", "dashboard.html"));
+});
+
+app.get("/add-product", (req, res) => {
+  res.sendFile(path.join(__dirname, "src", "public", "add-product.html"));
+});
+
+app.get("/products-list", (req, res) => {
+  res.sendFile(path.join(__dirname, "src", "public", "products.html"));
 });
 
 // Check if MongoDB URI is configured

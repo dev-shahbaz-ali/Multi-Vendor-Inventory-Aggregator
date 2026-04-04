@@ -208,10 +208,48 @@
       <div class="header">
         <h1>📦 Real-Time Inventory Dashboard</h1>
         <div
-          id="connectionStatus"
-          class="connection-status status-disconnected"
+          style="
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+          "
         >
-          Disconnected
+          <div
+            id="connectionStatus"
+            class="connection-status status-disconnected"
+          >
+            Disconnected
+          </div>
+          <a
+            href="/add-product"
+            style="
+              text-decoration: none;
+              background: #667eea;
+              color: white;
+              padding: 6px 15px;
+              border-radius: 20px;
+              font-size: 13px;
+              font-weight: bold;
+              transition: opacity 0.2s;
+            "
+            onmouseover="this.style.opacity = '0.8'"
+            onmouseout="this.style.opacity = '1'"
+            >+ Add New Product</a
+          >
+          <a
+            href="/products-list"
+            style="
+              text-decoration: none;
+              background: #4a5568;
+              color: white;
+              padding: 6px 15px;
+              border-radius: 20px;
+              font-size: 13px;
+              font-weight: bold;
+            "
+            >View Products</a
+          >
         </div>
       </div>
 
