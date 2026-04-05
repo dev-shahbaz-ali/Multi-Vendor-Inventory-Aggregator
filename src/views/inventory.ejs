@@ -1,0 +1,73 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">📊 Inventory Status</h1>
+  <a href="/manage-inventory" class="btn btn-outline-primary btn-sm"
+    >Manage Stock</a
+  >
+</div>
+
+<div class="table-responsive bg-white rounded shadow-sm">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Product</th>
+        <th>SKU</th>
+        <th>Stock Level</th>
+        <th>Threshold</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="inventoryList">
+      <tr>
+        <td colspan="5" class="text-center py-4">Fetching stock levels...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function loadInventory() {
+    const list = document.getElementById("inventoryList");
+    try {
+      const res = await fetch("/api/inventory");
+      const result = await res.json();
+
+      if (result.success && result.data.length > 0) {
+        list.innerHTML = result.data
+          .map((item) => {
+            const isLow = item.stock <= item.lowStockThreshold;
+            const isOut = item.stock === 0;
+            const statusClass = isOut
+              ? "bg-danger"
+              : isLow
+                ? "bg-warning text-dark"
+                : "bg-success";
+            const statusText = isOut
+              ? "Out of Stock"
+              : isLow
+                ? "Low Stock"
+                : "Good";
+
+            return `
+                        <tr>
+                            <td class="fw-bold">${item.productId?.name || "Unknown"}</td>
+                            <td><code class="text-muted">${item.productId?.sku || "N/A"}</code></td>
+                            <td class="fw-bold">${item.stock}</td>
+                            <td>${item.lowStockThreshold}</td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        </tr>`;
+          })
+          .join("");
+      } else {
+        list.innerHTML =
+          '<tr><td colspan="5" class="text-center py-4">No inventory records.</td></tr>';
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  loadInventory();
+</script>
+
+<%- include('partials/footer') %>

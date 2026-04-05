@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const http = require("http");
+const path = require("path");
 const { Server } = require("socket.io");
 require("dotenv").config();
 
@@ -23,6 +24,11 @@ const io = new Server(server, {
 
 // Middleware
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "src", "public")));
+
+// Set EJS View Engine
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "src", "views"));
 
 // Mount routes
 app.use("/api", productRoutes);
@@ -140,33 +146,32 @@ app.get("/health", (req, res) => {
 });
 
 // Serve dashboard HTML
-const path = require("path");
 app.get("/dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "src", "public", "dashboard.html"));
+  res.render("dashboard", { title: "Dashboard" });
 });
 
 app.get("/add-product", (req, res) => {
-  res.sendFile(path.join(__dirname, "src", "public", "add-product.html"));
+  res.render("add-product", { title: "Add New Product" });
 });
 
 app.get("/products-list", (req, res) => {
-  res.sendFile(path.join(__dirname, "src", "public", "products.html"));
+  res.render("products", { title: "Product Catalog" });
 });
 
 app.get("/inventory-list", (req, res) => {
-  res.sendFile(path.join(__dirname, "src", "public", "inventory.html"));
+  res.render("inventory", { title: "Inventory Status" });
 });
 
 app.get("/manage-inventory", (req, res) => {
-  res.sendFile(path.join(__dirname, "src", "public", "manage-inventory.html"));
+  res.render("manage-inventory", { title: "Manage Stock" });
 });
 
 app.get("/make-purchase", (req, res) => {
-  res.sendFile(path.join(__dirname, "src", "public", "make-purchase.html"));
+  res.render("make-purchase", { title: "Process Purchase" });
 });
 
 app.get("/purchase-history", (req, res) => {
-  res.sendFile(path.join(__dirname, "src", "public", "purchase-history.html"));
+  res.render("purchase-history", { title: "Transaction History" });
 });
 
 // Check if MongoDB URI is configured

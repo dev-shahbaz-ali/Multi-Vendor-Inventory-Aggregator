@@ -1,0 +1,62 @@
+<%- include('partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">📜 Transaction History</h1>
+  <a
+    href="/make-purchase"
+    class="btn btn-orange text-white"
+    style="background-color: #ed8936"
+    >New Order</a
+  >
+</div>
+
+<div class="table-responsive bg-white rounded shadow-sm">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Date</th>
+        <th>ID</th>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="historyList">
+      <tr>
+        <td colspan="5" class="text-center py-4">Loading history...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function loadHistory() {
+    const list = document.getElementById("historyList");
+    try {
+      const res = await fetch("/api/purchase/all");
+      const result = await res.json();
+      if (result.success && result.data.length > 0) {
+        list.innerHTML = result.data
+          .map(
+            (tx) => `
+                    <tr>
+                        <td>${new Date(tx.timestamp).toLocaleString()}</td>
+                        <td><small class="text-muted font-monospace">${tx.transactionId.substring(0, 8)}...</small></td>
+                        <td class="fw-bold">${tx.productId?.name || "Deleted"}</td>
+                        <td>${tx.quantity}</td>
+                        <td class="fw-bold text-${tx.status === "completed" ? "success" : "danger"}">${tx.status.toUpperCase()}</td>
+                    </tr>
+                `,
+          )
+          .join("");
+      } else {
+        list.innerHTML =
+          '<tr><td colspan="5" class="text-center py-4">No history found.</td></tr>';
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  loadHistory();
+</script>
+<%- include('partials/footer') %>

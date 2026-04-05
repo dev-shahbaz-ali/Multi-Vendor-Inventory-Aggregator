@@ -1,0 +1,22 @@
+<%- include('partials/header') %>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold text-primary">System Overview</h1>
+        <p class="col-md-8 fs-4">
+          Welcome to the Multi-Vendor Inventory Aggregator. Use the navigation
+          bar above to manage your products, track stock across vendors, and
+          process transactions in real-time.
+        </p>
+        <hr class="my-4" />
+        <div id="stats-container" class="row">
+          <!-- You can fetch stats from /api/purchase/stats via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

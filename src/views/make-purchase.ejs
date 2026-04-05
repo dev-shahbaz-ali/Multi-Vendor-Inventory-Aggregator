@@ -1,0 +1,104 @@
+<%- include('partials/header') %>
+
+<div class="card shadow-sm mx-auto" style="max-width: 500px">
+  <div class="card-header bg-warning text-dark">
+    <h2 class="h5 mb-0">🛒 Place an Order</h2>
+  </div>
+  <div class="card-body">
+    <form id="purchaseForm">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Select Product</label>
+        <select id="productId" class="form-select" required>
+          <option value="">Loading items...</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Quantity</label>
+        <input
+          type="number"
+          id="quantity"
+          class="form-control"
+          min="1"
+          value="1"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">User Identifier</label>
+        <input
+          type="text"
+          id="userId"
+          class="form-control"
+          placeholder="anonymous"
+        />
+      </div>
+      <button type="submit" class="btn btn-warning w-100 py-2 fw-bold">
+        Confirm Purchase
+      </button>
+    </form>
+    <div id="response" class="mt-3 alert d-none"></div>
+    <div class="mt-3 text-center">
+      <a href="/purchase-history" class="text-decoration-none small"
+        >View Transaction History</a
+      >
+    </div>
+  </div>
+</div>
+
+<script>
+  async function loadProducts() {
+    try {
+      const res = await fetch("/api/products");
+      const products = await res.json();
+      const select = document.getElementById("productId");
+      select.innerHTML =
+        '<option value="">-- Choose Item --</option>' +
+        products
+          .map(
+            (p) =>
+              `<option value="${p._id}">${p.name} ($${p.currentPrice.toFixed(2)})</option>`,
+          )
+          .join("");
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.getElementById("purchaseForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const respDiv = document.getElementById("response");
+    respDiv.classList.add("d-none");
+
+    const payload = {
+      productId: document.getElementById("productId").value,
+      quantity: parseInt(document.getElementById("quantity").value),
+      userId: document.getElementById("userId").value || "anonymous",
+    };
+
+    try {
+      const res = await fetch("/api/purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        respDiv.className = "mt-3 alert alert-success";
+        respDiv.innerHTML = `<strong>Success!</strong><br>TX ID: ${data.data.transactionId.substring(0, 12)}...<br>Remaining Stock: ${data.data.remainingStock}`;
+        if (data.alerts?.isLowStock) {
+          respDiv.innerHTML += `<br><span class="text-danger fw-bold">⚠️ ${data.alerts.message}</span>`;
+        }
+      } else {
+        throw new Error(data.error || "Purchase failed");
+      }
+    } catch (err) {
+      respDiv.className = "mt-3 alert alert-danger";
+      respDiv.textContent = err.message;
+    }
+    respDiv.classList.remove("d-none");
+  };
+
+  loadProducts();
+</script>
+
+<%- include('partials/footer') %>
