@@ -2,17 +2,31 @@
 
 <div class="row">
   <div class="col-md-12">
-    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+    <div class="p-5 mb-4 bg-white rounded-3 shadow-sm border">
       <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold text-primary">System Overview</h1>
+        <h1 class="display-6 fw-bold text-dark">System Overview</h1>
         <p class="col-md-8 fs-4">
-          Welcome to the Multi-Vendor Inventory Aggregator. Use the navigation
-          bar above to manage your products, track stock across vendors, and
-          process transactions in real-time.
+          Welcome back. Use the navigation bar above to manage your products,
+          track stock across vendors, and process transactions in real-time.
         </p>
-        <hr class="my-4" />
-        <div id="stats-container" class="row">
-          <!-- You can fetch stats from /api/purchase/stats via JS -->
+        <div class="row g-4 mt-2" id="stats-container">
+          <div class="col-md-4">
+            <div
+              class="card border-left-primary h-100 py-2 border-start border-primary border-4"
+            >
+              <div class="card-body">
+                <div
+                  class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+                >
+                  Status
+                </div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                  System Online
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Add more stat cards here -->
         </div>
       </div>
     </div>

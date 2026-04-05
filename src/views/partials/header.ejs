@@ -9,26 +9,62 @@
       rel="stylesheet"
     />
     <style>
-      .navbar-brand {
-        font-weight: bold;
-        color: #0d6efd !important;
+      :root {
+        --primary-color: #4e73df;
+        --secondary-color: #858796;
+        --success-color: #1cc88a;
       }
-      .nav-link:hover {
-        color: #0d6efd !important;
+      body {
+        background-color: #f8f9fc;
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      .navbar {
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      }
+      .navbar-brand {
+        font-weight: 800;
+        letter-spacing: 0.05rem;
+      }
+      .card {
+        border: none;
+        border-radius: 0.35rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+      }
+      .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+        font-weight: bold;
+        color: var(--primary-color);
+      }
+      .table thead th {
+        background-color: #f8f9fc;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.05rem;
+        border-bottom: 2px solid #e3e6f0;
+      }
+      .badge-soft-danger {
+        background-color: #f8d7da;
+        color: #721c24;
       }
       #alert-badge {
         display: none;
       }
-      .low-stock-warning {
-        color: #dc3545;
+      .nav-link.active {
+        color: #fff !important;
         font-weight: bold;
+        border-bottom: 2px solid var(--primary-color);
       }
     </style>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top mb-4">
       <div class="container">
-        <a class="navbar-brand" href="/dashboard">📦 Multi-Vendor Aggregator</a>
+        <a class="navbar-brand" href="/dashboard">📦 INV-AGGREGATOR</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -40,11 +76,15 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="/dashboard">Dashboard</a>
+              <a
+                class="nav-link <%= title === 'Dashboard' ? 'active' : '' %>"
+                href="/dashboard"
+                >Dashboard</a
+              >
             </li>
             <li class="nav-item dropdown">
               <a
-                class="nav-link dropdown-toggle"
+                class="nav-link dropdown-toggle <%= title.includes('Product') ? 'active' : '' %>"
                 href="#"
                 role="button"
                 data-bs-toggle="dropdown"
@@ -63,7 +103,7 @@
             </li>
             <li class="nav-item dropdown">
               <a
-                class="nav-link dropdown-toggle"
+                class="nav-link dropdown-toggle <%= title.includes('Inventory') || title.includes('Stock') ? 'active' : '' %>"
                 href="#"
                 role="button"
                 data-bs-toggle="dropdown"
@@ -83,10 +123,18 @@
               </ul>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/make-purchase">Buy Products</a>
+              <a
+                class="nav-link <%= title === 'Process Purchase' ? 'active' : '' %>"
+                href="/make-purchase"
+                >Buy Products</a
+              >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/purchase-history">History</a>
+              <a
+                class="nav-link <%= title === 'Transaction History' ? 'active' : '' %>"
+                href="/purchase-history"
+                >History</a
+              >
             </li>
           </ul>
           <div class="d-flex">
@@ -97,6 +145,6 @@
         </div>
       </div>
     </nav>
-    <div class="container"></div>
+    <div class="container pb-5"></div>
   </body>
 </html>
