@@ -30,6 +30,7 @@
             id="threshold"
             class="form-control"
             min="0"
+            value="10"
             required
           />
         </div>
@@ -51,7 +52,8 @@
   async function loadProducts() {
     try {
       const res = await fetch("/api/products");
-      const products = await res.json();
+      const result = await res.json();
+      const products = result.data || [];
       const select = document.getElementById("productId");
       select.innerHTML =
         '<option value="">-- Choose a Product --</option>' +
@@ -86,8 +88,8 @@
 
     const payload = {
       productId: document.getElementById("productId").value,
-      stock: parseInt(document.getElementById("stock").value),
-      lowStockThreshold: parseInt(document.getElementById("threshold").value),
+      stock: parseInt(document.getElementById("stock").value) || 0,
+      lowStockThreshold: parseInt(document.getElementById("threshold").value) || 10,
     };
 
     try {
