@@ -9,9 +9,12 @@ require("dotenv").config();
 const productRoutes = require("./src/routes/productRoutes");
 const inventoryRoutes = require("./src/routes/inventoryRoutes");
 const purchaseRoutes = require("./src/routes/purchaseRoutes");
-// After the emitAlert function definition
-const inventoryController = require("./src/controllers/inventoryController");
-const purchaseController = require("./src/controllers/purchaseController");
+const webhookRoutes = require("./src/routes/webhookRoutes");
+const reconciliationRoutes = require("./src/routes/reconciliationRoutes");
+
+// Notification service — receives io/emitAlert after WebSocket setup
+const notificationService = require("./src/services/notificationService");
+const errorHandler = require("./src/middlewares/errorHandler");
 
 const app = express();
 const server = http.createServer(app);
@@ -34,9 +37,8 @@ app.set("views", path.join(__dirname, "src", "views"));
 app.use("/api", productRoutes);
 app.use("/api", inventoryRoutes);
 app.use("/api", purchaseRoutes);
-
-// Add global purchase history endpoint
-app.get("/api/purchase/all", purchaseController.getAllTransactions);
+app.use("/api", webhookRoutes);
+app.use("/api", reconciliationRoutes);
 
 // Store connected clients
 const connectedClients = new Map();
@@ -174,6 +176,9 @@ app.get("/purchase-history", (req, res) => {
   res.render("purchase-history", { title: "Transaction History" });
 });
 
+// Centralized error handling — must be registered after all routes
+app.use(errorHandler);
+
 // Check if MongoDB URI is configured
 const mongoURI = process.env.MONGODB_URI;
 if (!mongoURI) {
@@ -236,6 +241,5 @@ process.on("SIGINT", async () => {
   }
 });
 
-// Pass WebSocket to controllers
-inventoryController.setWebSocket(io, emitAlert);
-purchaseController.setWebSocket(io, emitAlert);
+// Pass WebSocket to notification service (single source of truth for alerts)
+notificationService.setWebSocket(io, emitAlert);
