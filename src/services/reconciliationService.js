@@ -1,7 +1,6 @@
 const Inventory = require("../models/Inventory");
 const Product = require("../models/Product");
 const Vendor = require("../models/Vendor");
-const sendgrid = require("@sendgrid/mail");
 
 class ReconciliationService {
   async reconcileWithVendor(productId) {
@@ -44,11 +43,13 @@ class ReconciliationService {
       return;
     }
 
+    // Require lazily so missing package doesn't crash the app on startup
+    const sendgrid = require("@sendgrid/mail");
     sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 
     const msg = {
-      to: "admin@inventory.com",
-      from: "alerts@inventory.com",
+      to: process.env.ALERT_EMAIL_TO || "admin@inventory.com",
+      from: process.env.ALERT_EMAIL_FROM || "alerts@inventory.com",
       subject: `⚠️ Inventory Reconciliation Failed: ${data.product}`,
       html: `
         <h2>Inventory Discrepancy Detected</h2>
@@ -58,11 +59,17 @@ class ReconciliationService {
         <p><strong>Local Stock:</strong> ${data.localStock}</p>
         <p><strong>Vendor Stock:</strong> ${data.vendorStock}</p>
         <p><strong>Discrepancy:</strong> ${data.discrepancy > 0 ? "+" : ""}${data.discrepancy}</p>
+        <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
         <p>Please investigate immediately!</p>
       `,
     };
 
-    await sendgrid.send(msg);
+    try {
+      await sendgrid.send(msg);
+    } catch (emailErr) {
+      console.error("Failed to send reconciliation email:", emailErr.message);
+      // Email failure must not crash the reconciliation flow
+    }
   }
 }
 
